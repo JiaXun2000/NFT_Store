@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/ERC721.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+
+contract NFTShoppingMall is ERC721,Ownable{
+    using Address for address;
+    using Strings for uint256;
+    // uint256 private isCountTxTimes = 1;
+    string private _baseTokenURI;
+    //uint256 private countCollectionSale = 0; 
+    //uint256[] private sellList;
+    mapping(uint256 => string) private _tokenURIs;
+    // mapping(uint256 => uint256) private price;
+    // mapping(uint256 => bool) private lock;
+    // mapping(address => uint256) private moneyWithdraw;
+    //balances record user count
+    constructor(string memory name_, string memory symbol_, string memory baseTokenURI_)  ERC721(name_, symbol_){
+        _baseTokenURI = baseTokenURI_;
+    }
+    
+    function mint(address _to, uint256 _tokenId, string memory tokenURI) public{
+        _safeMint(_to, _tokenId);
+        _setTokenURI(_tokenId, tokenURI);
+    
+    }
+    function approve(address _to, uint256 _tokenId) public override {
+        super.approve(_to, _tokenId);
+    }
+    function _setTokenURI(uint256 _tokenId, string memory _tokenURI) internal {
+        require(_exists(_tokenId), "ERC721 MetaData: URI set of nonexsistent token");
+        _tokenURIs[_tokenId] = _tokenURI;
+    }
+    // function sell(uint256 _tokenId, uint256 _price) public{
+    //     require(_exists(_tokenId), "ERC721 MetaData: nonexsistent token");
+    //     require(ownerOf(_tokenId) == msg.sender, " your are not this tokenId owner");
+    //     price[_tokenId] = _price;
+    //     approve(address(this), _tokenId);
+    //     //sellList[countCollectionSale] = _tokenId;
+    //     //countCollectionSale ++;
+    //     lock[_tokenId] = true;
+    // }
+    // function buy(uint256 _tokenId, address _to) public payable {
+    //     require(_exists(_tokenId), "ERC721 MetaData: nonexsistent token");
+    //     require(price[_tokenId] <= msg.value, " your pay fee is not enough");
+    //     require(lock[_tokenId] == true, "this tokenId emporarily not to sell");
+    //     moneyWithdraw[ownerOf(_tokenId)] = msg.value;
+    //     this.transferFrom(ownerOf(_tokenId), _to, _tokenId); //msg.sender is contract.
+    //     //safeTransferFrom(ownerOf(_tokenId), _to, _tokenId);
+    //     lock[_tokenId] = false;
+
+    // }
+    // function cancelSale(uint256 _tokenId) public {
+    //     require(ownerOf(_tokenId) == msg.sender, "Sorry, you are not this token master");
+    //     approve(address(0), _tokenId);
+    //     price[_tokenId] = 0;
+    //     lock[_tokenId] = false;
+    // }
+
+    // function withdraw() public {
+    //     require(moneyWithdraw[msg.sender] != 0, "you have no money to withdraw");
+    //     require(isCountTxTimes == 1, "Get out here , hacker!");
+        
+    //     isCountTxTimes = 2;
+    //     payable(msg.sender).transfer(moneyWithdraw[msg.sender]);
+    //     moneyWithdraw[msg.sender] = 0;
+    //     isCountTxTimes = 1;
+    // }
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+
+        string memory baseURI = _baseURI(tokenId);
+        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, tokenId.toString())) : "null";
+    }
+    function _baseURI(uint256 _tokenId) internal view returns (string memory) {
+        return _tokenURIs[_tokenId];
+    }
+    function burn(uint256 tokenId) public{
+        //solhint-disable-next-line max-line-length
+        //require(lock[tokenId] == false, "this tokenId is locked, you can not burn it");
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721Burnable: caller is not owner nor approved");
+        _burn(tokenId);
+    }
+    
+    receive() external payable {}
+
+    fallback() external payable {}
+
+}
